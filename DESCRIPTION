@@ -11,3 +11,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 URL: https://github.com/mightymetrika/OLStrajr
 BugReports: https://github.com/mightymetrika/OLStrajr/issues
+Imports: 
+    ggplot2,
+    tidyr,
+    tidyselect
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
