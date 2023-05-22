@@ -1,3 +1,3 @@
 globalVariables(c(
-  "time", "score", ".data", "predicted_score"
+  "time", "score", ".data", "predicted_score", "intercept", "linear"
 ))
