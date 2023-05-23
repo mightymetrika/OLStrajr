@@ -36,8 +36,10 @@ OLStraj <- function(data, idvarname = "id", varlist = c("anti1", "anti2", "anti3
     model <- stats::lm(score ~ time, data = mod_df)
 
     # Add the estimated values to the data frame
-    estimated_values <- rbind(estimated_values, data.frame(id = id, intercept = stats::coef(model)[1], linear = stats::coef(model)[2]))
-  }
+    ols_dat <- stats::setNames(data.frame(id, stats::coef(model)[1], stats::coef(model)[2]),
+                               c(eval(idvarname), "intercept", "linear"))
+    estimated_values <- rbind(estimated_values, ols_dat)
+    }
 
   # Write output to a data frame
   if (outds == TRUE) {
