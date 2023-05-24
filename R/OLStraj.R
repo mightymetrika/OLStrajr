@@ -1,4 +1,6 @@
-OLStraj <- function(data, idvarname = "id", varlist = c("anti1", "anti2", "anti3", "anti4"),
+OLStraj <- function(data, idvarname = "id", predvarname = "time",
+                    outvarname = "score",
+                    varlist = c("anti1", "anti2", "anti3", "anti4"),
                     timepts = c(0, 1, 2, 3), inclmiss = "n", level = "both", regtype = "lin",
                     numplot = NULL, hist = "y", box = "y", outds = TRUE) {
 
@@ -14,36 +16,36 @@ OLStraj <- function(data, idvarname = "id", varlist = c("anti1", "anti2", "anti3
     data <- data[stats::complete.cases(data), ]
   }
 
-  # Create a subsample
-  if (!is.null(numplot)) {
-    data <- data[1:numplot, ]
-  }
-
   # OLS case-by-case regressions
   estimated_values <- data.frame()
 
   #Lengthen data frame
   data <- tidyr::pivot_longer(data, cols = tidyselect::all_of(varlist),
-                              names_to = "time",
-                              values_to = "score")
+                              names_to = predvarname,
+                              values_to = outvarname)
 
-  data$time <- timepts[match(data$time, varlist)]
+  data[[predvarname]] <- timepts[match(data[[predvarname]], varlist)]
 
   for (id in unique(data[[idvarname]])) {
 
     # Fit a linear regression model
     mod_df <- data[data[[idvarname]] == id, ]
-    model <- stats::lm(score ~ time, data = mod_df)
+    model <- stats::lm(stats::as.formula(paste(outvarname, "~", predvarname)),
+                       data = mod_df)
+
 
     # Add the estimated values to the data frame
-    ols_dat <- stats::setNames(data.frame(id, stats::coef(model)[1], stats::coef(model)[2]),
+    ols_dat <- stats::setNames(data.frame(id,
+                                          stats::coef(model)[1],
+                                          stats::coef(model)[2]),
                                c(eval(idvarname), "intercept", "linear"))
+
     estimated_values <- rbind(estimated_values, ols_dat)
     }
 
   # Write output to a data frame
   if (outds == TRUE) {
-    out_data <- merge(data_orig, estimated_values, by = "id")
+    out_data <- merge(data_orig, estimated_values, by = eval(idvarname))
   }
 
   # Plotting section
@@ -51,20 +53,28 @@ OLStraj <- function(data, idvarname = "id", varlist = c("anti1", "anti2", "anti3
   individual_plots <- list()
   histogram_plots <- list()
 
+  # Prepare data for plotting and conditionally create a subsample
+  data <- merge(data, estimated_values, by = eval(idvarname))
+  if (!is.null(numplot)) {
+    data_plot <- data[1:numplot, ]
+  } else {
+    data_plot <- data
+  }
+
   if (level == "both" | level == "grp") {
     # Group-level plots
 
     # Simple-joined (noninterpolated) trajectories
-    group_plots[["simple_joined"]] <- ggplot2::ggplot(data, ggplot2::aes(x = time, y = score,
-                                                                         group = .data[[idvarname]])) +
+    group_plots[["simple_joined"]] <- ggplot2::ggplot(data_plot,
+                                                      ggplot2::aes(x = .data[[predvarname]],
+                                                                   y = .data[[outvarname]],
+                                                                   group = .data[[idvarname]])) +
       ggplot2::geom_line() +
       ggplot2::ggtitle("Simple-Joined Trajectories")
 
     # OLS trajectories
-    data <- merge(data, estimated_values, by = "id")
-    data$predicted_score <- data$intercept + data$linear * data$time
 
-    group_plots[["ols"]] <- ggplot2::ggplot(data, ggplot2::aes(x = time, y = score,
+    group_plots[["ols"]] <- ggplot2::ggplot(data_plot, ggplot2::aes(x = .data[[predvarname]], y = .data[[outvarname]],
                                                                group = .data[[idvarname]])) +
       ggplot2::geom_smooth(se = FALSE, method = lm) +
       ggplot2::ggtitle("OLS Trajectories")
@@ -75,16 +85,11 @@ OLStraj <- function(data, idvarname = "id", varlist = c("anti1", "anti2", "anti3
     for (id in unique(data[[idvarname]])) {
       ind_data <- data[data[[idvarname]] == id, ]
 
-      # # Simple-joined (noninterpolated) trajectories
-      # individual_plots[[paste("simple_joined", id)]] <- ggplot2::ggplot(ind_data, ggplot2::aes(x = time, y = score)) +
-      #   ggplot2::geom_point() +
-      #   ggplot2::geom_line() +
-      #   ggplot2::ggtitle(paste("Simple-Joined Trajectory for", id))
-
       # OLS trajectories
-      individual_plots[[paste("ols", id)]] <- ggplot2::ggplot(ind_data, ggplot2::aes(x = time, y = score)) +
+      individual_plots[[paste("ols", id)]] <- ggplot2::ggplot(ind_data,
+                                                              ggplot2::aes(x = .data[[predvarname]],
+                                                                           y = .data[[outvarname]])) +
         ggplot2::geom_point() +
-        #ggplot2::geom_line(ggplot2::aes(y = predicted_score)) +
         ggplot2::geom_smooth(se = FALSE, method = lm) +
         ggplot2::ggtitle(paste("OLS Trajectory for", id))
     }
@@ -124,4 +129,3 @@ OLStraj <- function(data, idvarname = "id", varlist = c("anti1", "anti2", "anti3
 
   return(result)
 }
-
