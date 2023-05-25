@@ -8,6 +8,11 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
     stop("ERROR: NUMBER OF TIME POINTS DOES NOT EQUAL NUMBER OF REPEATED MEASURES")
   }
 
+  # Create subsample
+  if (!is.null(numplot)) {
+    data <- data[1:numplot, ]
+  }
+
   # Save a copy of data in original format
   data_orig <- data
 
@@ -26,19 +31,39 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
 
   data[[predvarname]] <- timepts[match(data[[predvarname]], varlist)]
 
+  # Get quadratic term
+  if (regtype != "lin"){
+    data[[paste0(predvarname, "_sq")]] <- data[[predvarname]]^2
+  }
+
   for (id in unique(data[[idvarname]])) {
 
     # Fit a linear regression model
     mod_df <- data[data[[idvarname]] == id, ]
-    model <- stats::lm(stats::as.formula(paste(outvarname, "~", predvarname)),
-                       data = mod_df)
 
+    if (regtype == "lin"){
+      cbc_form <- stats::as.formula(paste(outvarname, "~", predvarname))
+    } else {
+      cbc_form <- stats::as.formula(paste(outvarname, "~", predvarname, "+",
+                                          paste0(predvarname, "_sq")))
+    }
+    model <- stats::lm(cbc_form, data = mod_df)
 
     # Add the estimated values to the data frame
-    ols_dat <- stats::setNames(data.frame(id,
-                                          stats::coef(model)[1],
-                                          stats::coef(model)[2]),
-                               c(eval(idvarname), "intercept", "linear"))
+    if (regtype == "lin"){
+      ols_dat <- stats::setNames(data.frame(id,
+                                            stats::coef(model)[1],
+                                            stats::coef(model)[2]),
+                                 c(eval(idvarname), "intercept", "linear"))
+    } else {
+      ols_dat <- stats::setNames(data.frame(id,
+                                            stats::coef(model)[1],
+                                            stats::coef(model)[2],
+                                            stats::coef(model)[3]),
+                                 c(eval(idvarname), "intercept", "linear", "quad"))
+
+    }
+
 
     estimated_values <- rbind(estimated_values, ols_dat)
     }
@@ -53,19 +78,14 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
   individual_plots <- list()
   histogram_plots <- list()
 
-  # Prepare data for plotting and conditionally create a subsample
+  # Prepare data for plotting
   data <- merge(data, estimated_values, by = eval(idvarname))
-  if (!is.null(numplot)) {
-    data_plot <- data[1:numplot, ]
-  } else {
-    data_plot <- data
-  }
 
   if (level == "both" | level == "grp") {
     # Group-level plots
 
     # Simple-joined (noninterpolated) trajectories
-    group_plots[["simple_joined"]] <- ggplot2::ggplot(data_plot,
+    group_plots[["simple_joined"]] <- ggplot2::ggplot(data,
                                                       ggplot2::aes(x = .data[[predvarname]],
                                                                    y = .data[[outvarname]],
                                                                    group = .data[[idvarname]])) +
@@ -73,11 +93,20 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
       ggplot2::ggtitle("Simple-Joined Trajectories")
 
     # OLS trajectories
-
-    group_plots[["ols"]] <- ggplot2::ggplot(data_plot, ggplot2::aes(x = .data[[predvarname]], y = .data[[outvarname]],
+    group_plots[["ols"]] <- ggplot2::ggplot(data, ggplot2::aes(x = .data[[predvarname]], y = .data[[outvarname]],
                                                                group = .data[[idvarname]])) +
-      ggplot2::geom_smooth(se = FALSE, method = lm) +
       ggplot2::ggtitle("OLS Trajectories")
+
+    if (regtype == "lin"){
+      group_plots[["ols"]] <- group_plots[["ols"]] +
+        ggplot2::geom_smooth(se = FALSE, method = lm)
+
+    } else {
+      group_plots[["ols"]] <- group_plots[["ols"]] +
+        ggplot2::stat_smooth(method = "lm", formula = y ~ x + I(x^2),
+                             se = FALSE)
+    }
+
   }
 
   if (level == "both" | level == "ind") {
@@ -89,9 +118,26 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
       individual_plots[[paste("ols", id)]] <- ggplot2::ggplot(ind_data,
                                                               ggplot2::aes(x = .data[[predvarname]],
                                                                            y = .data[[outvarname]])) +
-        ggplot2::geom_point() +
-        ggplot2::geom_smooth(se = FALSE, method = lm) +
         ggplot2::ggtitle(paste("OLS Trajectory for", id))
+
+      if (regtype == "lin"){
+        individual_plots[[paste("ols", id)]] <- individual_plots[[paste("ols", id)]] +
+          ggplot2::geom_point() +
+          ggplot2::geom_smooth(se = FALSE, method = lm)
+
+
+      } else if (regtype == "quad"){
+        individual_plots[[paste("ols", id)]] <- individual_plots[[paste("ols", id)]] +
+          ggplot2::geom_point() +
+          ggplot2::geom_smooth(method = "lm", formula = y ~ x + I(x^2), se = FALSE)
+
+      } else {
+        individual_plots[[paste("ols", id)]] <- individual_plots[[paste("ols", id)]] +
+          ggplot2::geom_point() +
+          ggplot2::geom_smooth(se = FALSE, method = lm) +
+          ggplot2::geom_smooth(method = "lm", formula = y ~ x + I(x^2), se = FALSE,
+                               linetype = "dashed")
+      }
     }
   }
 
@@ -104,14 +150,34 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
     slopes <- ggplot2::ggplot(data, ggplot2::aes(x = linear)) +
       ggplot2::geom_histogram() +
       ggplot2::ggtitle("Histogram of OLS Estimated Slopes")
+
+    if (regtype != "lin"){
+      quads <- slopes <- ggplot2::ggplot(data, ggplot2::aes(x = quad)) +
+        ggplot2::geom_histogram() +
+        ggplot2::ggtitle("Histogram of OLS Estimated Quadratic Terms")
+
+      histogram_plots = list("intercepts" = intercepts,
+                             "slopes" = slopes,
+                             "quads" = quads)
+    } else {
+      histogram_plots = list("intercepts" = intercepts,
+                             "slopes" = slopes)
+    }
   }
 
   if (box == "y") {
     #Add mean to boxplot:
     #https://stackoverflow.com/questions/19876505/boxplot-show-the-value-of-mean
-    data_box <- data |> tidyr::pivot_longer(cols = c(intercept, linear),
-                                            names_to = "param",
-                                            values_to = "est") |>
+    if (regtype == "lin"){
+      data_box <- data |> tidyr::pivot_longer(cols = c(intercept, linear),
+                                              names_to = "param",
+                                              values_to = "est")
+    } else {
+      data_box <- data |> tidyr::pivot_longer(cols = c(intercept, linear, quad),
+                                              names_to = "param",
+                                              values_to = "est")
+    }
+    data_box <- data_box |>
       ggplot2::ggplot(ggplot2::aes(x = param, y = est)) +
       ggplot2::geom_boxplot() +
       ggplot2::ylab("OLS Estimates") +
@@ -123,8 +189,7 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
   result <- list(out_data = out_data,
                  group_plots = group_plots,
                  individual_plots = individual_plots,
-                 histogram_plots = list("intercepts" = intercepts,
-                                        "slopes" = slopes),
+                 histogram_plots = histogram_plots,
                  box_plot = data_box)
 
   return(result)
