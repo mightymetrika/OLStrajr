@@ -6,7 +6,8 @@
 #                    var4 = c(1,5,3,9,6))
 #
 #   olstraj_out <- OLStraj(data = df,
-#                          varlist = c("var1", "var2", "var3", "var4"))
+#                          varlist = c("var1", "var2", "var3", "var4"),
+#                          regtype = "both")
 #
 #   expect_equal(2 * 2, 4)
 # })
