@@ -53,14 +53,16 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
     if (regtype == "lin"){
       ols_dat <- stats::setNames(data.frame(id,
                                             stats::coef(model)[1],
-                                            stats::coef(model)[2]),
-                                 c(eval(idvarname), "intercept", "linear"))
+                                            stats::coef(model)[2],
+                                            summary(model)[[8]]),
+                                 c(eval(idvarname), "intercept", "linear", "rsquared"))
     } else {
       ols_dat <- stats::setNames(data.frame(id,
                                             stats::coef(model)[1],
                                             stats::coef(model)[2],
-                                            stats::coef(model)[3]),
-                                 c(eval(idvarname), "intercept", "linear", "quad"))
+                                            stats::coef(model)[3],
+                                            summary(model)[[8]]),
+                                 c(eval(idvarname), "intercept", "linear", "quad", "rsquared"))
 
     }
 
