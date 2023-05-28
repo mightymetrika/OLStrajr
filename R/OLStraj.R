@@ -168,8 +168,7 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
   }
 
   if (box == "y") {
-    #Add mean to boxplot:
-    #https://stackoverflow.com/questions/19876505/boxplot-show-the-value-of-mean
+    #Add mean to boxplot and label outliers:
     if (regtype == "lin"){
       data_box <- data |> tidyr::pivot_longer(cols = c(intercept, linear),
                                               names_to = "param",
@@ -179,13 +178,37 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
                                               names_to = "param",
                                               values_to = "est")
     }
+
+    # calculate the upper and lower bounds for outliers
+    boxplot_stats <- tapply(data_box$est, data_box$param, grDevices::boxplot.stats)
+    outlier_vals <- lapply(boxplot_stats, `[[`, "out")
+
+    # Initialize outlier column
+    data_box$outlier <- NA
+
+    # Loop over the parameters and identify outliers
+    for(i in unique(data_box$param)) {
+      pick_outliers <- data_box$param == i & data_box$est %in% outlier_vals[[i]] &
+        is.na(data_box$outlier)
+
+      data_box$outlier[pick_outliers] <- data_box[[idvarname]][pick_outliers]
+    }
+
+    # Convert outlier column to character and change missing to ""
+    data_box$outlier <- as.character(data_box$outlier)
+    data_box$outlier <- ifelse(is.na(data_box$outlier), "", data_box$outlier)
+
+    #Create box plot with mean plotted and outliers labeled by idvarname
     data_box <- data_box |>
       ggplot2::ggplot(ggplot2::aes(x = param, y = est)) +
       ggplot2::geom_boxplot() +
+      ggplot2::stat_summary(fun = mean, geom = "point", shape = 20, size = 3, color = "blue") + # Add point for mean
+      ggplot2::geom_text(ggplot2::aes(label = outlier), hjust = -0.1) +
       ggplot2::ylab("OLS Estimates") +
       ggplot2::xlab("") +
       ggplot2::ggtitle("Box Plots of OLS Estimates")
   }
+
 
   # Return a list containing estimated values and the plots
   result <- list(out_data = out_data,
