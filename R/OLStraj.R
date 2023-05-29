@@ -2,7 +2,8 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
                     outvarname = "score",
                     varlist = c("anti1", "anti2", "anti3", "anti4"),
                     timepts = c(0, 1, 2, 3), inclmiss = "n", level = "both", regtype = "lin",
-                    numplot = NULL, hist = "y", box = "y", outds = TRUE) {
+                    numplot = NULL, hist = "y", int_bins = 30, lin_bins = 30,
+                    quad_bins = 30, box = "y", outds = TRUE) {
 
   if(length(timepts) != length(varlist)){
     stop("ERROR: NUMBER OF TIME POINTS DOES NOT EQUAL NUMBER OF REPEATED MEASURES")
@@ -120,7 +121,7 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
       individual_plots[[paste("ols", id)]] <- ggplot2::ggplot(ind_data,
                                                               ggplot2::aes(x = .data[[predvarname]],
                                                                            y = .data[[outvarname]])) +
-        ggplot2::ggtitle(paste("OLS Trajectory for", id))
+        ggplot2::ggtitle(paste("OLS Trajectory for", idvarname, ": ", id))
 
       if (regtype == "lin"){
         individual_plots[[paste("ols", id)]] <- individual_plots[[paste("ols", id)]] +
@@ -146,16 +147,16 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
   if (hist == "y") {
     # Histogram
     intercepts <- ggplot2::ggplot(data, ggplot2::aes(x = intercept)) +
-      ggplot2::geom_histogram() +
+      ggplot2::geom_histogram(bins = int_bins) +
       ggplot2::ggtitle("Histogram of OLS Estimated Intercepts")
 
     slopes <- ggplot2::ggplot(data, ggplot2::aes(x = linear)) +
-      ggplot2::geom_histogram() +
+      ggplot2::geom_histogram(bins = lin_bins) +
       ggplot2::ggtitle("Histogram of OLS Estimated Slopes")
 
     if (regtype != "lin"){
       quads <- slopes <- ggplot2::ggplot(data, ggplot2::aes(x = quad)) +
-        ggplot2::geom_histogram() +
+        ggplot2::geom_histogram(bins = quad_bins) +
         ggplot2::ggtitle("Histogram of OLS Estimated Quadratic Terms")
 
       histogram_plots = list("intercepts" = intercepts,
