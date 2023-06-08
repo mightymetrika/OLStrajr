@@ -23,7 +23,6 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
   }
 
   # OLS case-by-case regressions
-  estimated_values <- data.frame()
 
   #Lengthen data frame
   data <- tidyr::pivot_longer(data, cols = tidyselect::all_of(varlist),
@@ -37,39 +36,37 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
     data[[paste0(predvarname, "_sq")]] <- data[[predvarname]]^2
   }
 
-  for (id in unique(data[[idvarname]])) {
+  if (regtype == "lin"){
+    cbc_form <- stats::as.formula(paste(outvarname, "~", predvarname))
+  } else {
+    cbc_form <- stats::as.formula(paste(outvarname, "~", predvarname, "+",
+                                        paste0(predvarname, "_sq")))
+  }
 
-    # Fit a linear regression model
-    mod_df <- data[data[[idvarname]] == id, ]
+  models <- cbc_lm(data = data, formula = cbc_form, .case = idvarname)
 
-    if (regtype == "lin"){
-      cbc_form <- stats::as.formula(paste(outvarname, "~", predvarname))
-    } else {
-      cbc_form <- stats::as.formula(paste(outvarname, "~", predvarname, "+",
-                                          paste0(predvarname, "_sq")))
-    }
-    model <- stats::lm(cbc_form, data = mod_df)
+  ols_dat <- lapply(seq_along(models$models), function(i){
+    # Define model
+    model <- models$models[[i]]
 
     # Add the estimated values to the data frame
     if (regtype == "lin"){
-      ols_dat <- stats::setNames(data.frame(id,
-                                            stats::coef(model)[1],
-                                            stats::coef(model)[2],
-                                            summary(model)[[8]]),
-                                 c(eval(idvarname), "intercept", "linear", "rsquared"))
+      stats::setNames(data.frame(i,
+                                 stats::coef(model)[1],
+                                 stats::coef(model)[2],
+                                 summary(model)[[8]]),
+                      c(eval(idvarname), "intercept", "linear", "rsquared"))
     } else {
-      ols_dat <- stats::setNames(data.frame(id,
-                                            stats::coef(model)[1],
-                                            stats::coef(model)[2],
-                                            stats::coef(model)[3],
-                                            summary(model)[[8]]),
-                                 c(eval(idvarname), "intercept", "linear", "quad", "rsquared"))
-
+      stats::setNames(data.frame(i,
+                                 stats::coef(model)[1],
+                                 stats::coef(model)[2],
+                                 stats::coef(model)[3],
+                                 summary(model)[[8]]),
+                      c(eval(idvarname), "intercept", "linear", "quad", "rsquared"))
     }
+  })
 
-
-    estimated_values <- rbind(estimated_values, ols_dat)
-    }
+  estimated_values <- do.call(rbind, ols_dat)
 
   # Write output to a data frame
   if (outds == TRUE) {
