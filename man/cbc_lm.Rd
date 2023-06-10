@@ -4,7 +4,15 @@
 \alias{cbc_lm}
 \title{Case-by-Case Linear Regresssion}
 \usage{
-cbc_lm(data, formula, .case, n_bootstrap = 4000)
+cbc_lm(
+  data,
+  formula,
+  .case,
+  n_bootstrap = 4000,
+  lm_options = list(),
+  boot_options = list(),
+  conf = 0.95
+)
 }
 \arguments{
 \item{data}{A data frame containing the variables in the model}
@@ -16,6 +24,12 @@ of class formula}
 
 \item{n_bootstrap}{The number of bootstrap replicates for standard errors and
 confidence intervals of mean coefficients}
+
+\item{lm_options}{Pass additional arguments to lm}
+
+\item{boot_options}{Pass additional arguments to boot}
+
+\item{conf}{Pass confidence level to boot.ci}
 }
 \value{
 An object of class cbc_lm

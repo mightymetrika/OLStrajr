@@ -6,17 +6,22 @@
 #' @param .case A quoted variable name used to subset data into cases
 #' @param n_bootstrap The number of bootstrap replicates for standard errors and
 #' confidence intervals of mean coefficients
+#' @param lm_options Pass additional arguments to lm
+#' @param boot_options Pass additional arguments to boot
+#' @param conf Pass confidence level to boot.ci
 #'
 #' @return An object of class cbc_lm
 #' @export
 #'
+#' @importFrom stats lm
 #' @examples
 #'   df <- data.frame(ids = rep(1:5, 5),
 #'                    vals = stats::rnorm(25),
 #'                    outs = stats::rnorm(25, 10, 25))
 #'
 #'  cbc_lm(data = df, formula = outs ~ vals, .case = "ids")
-cbc_lm <- function(data, formula, .case, n_bootstrap = 4000){
+cbc_lm <- function(data, formula, .case, n_bootstrap = 4000,
+                   lm_options = list(), boot_options = list(), conf = 0.95){
 
   # Extract the variables from the formula
   ind_vars <- all.vars(stats::as.formula(formula))[-1]
@@ -27,7 +32,7 @@ cbc_lm <- function(data, formula, .case, n_bootstrap = 4000){
   # Run regression for each case
   models <- purrr::map(cases, function(case) {
     mod_df <- data[data[[.case]] == case,]
-    stats::lm(formula, data = mod_df)
+    do.call("lm", c(list(formula = formula, data = quote(mod_df)), lm_options))
   }) |> purrr::set_names(cases)
 
   # Summarize each model
@@ -43,13 +48,17 @@ cbc_lm <- function(data, formula, .case, n_bootstrap = 4000){
     var <- .x
     mean_coef <- mean(flat_summaries$estimate[flat_summaries$term == var])
 
-    boot_coef <- boot::boot(data = flat_summaries[flat_summaries$term == var,] , statistic = function(data, indices) {
-      mean(data$estimate[data$term == var][indices])
-    }, R = n_bootstrap)
+    boot_coef <- do.call(boot::boot, c(list(
+      data = flat_summaries[flat_summaries$term == var,],
+      statistic = function(data, indices) {
+        mean(data$estimate[data$term == var][indices])
+      },
+      R = n_bootstrap
+    ), boot_options))
 
     bm_coef <- mean(boot_coef$t)
     se_coef <- stats::sd(boot_coef$t)
-    ci_coef <- boot::boot.ci(boot_coef, type = "bca")$bca[4:5]
+    ci_coef <- boot::boot.ci(boot_coef, type = "bca", conf = conf)$bca[4:5]
 
     list(mean_coef = mean_coef, bm_coef = bm_coef, se_coef = se_coef, ci_coef = ci_coef)
   }) |> purrr::set_names(ind_vars)
@@ -177,6 +186,45 @@ print.summary.cbc_lm <- function(x, digits = max(3L, getOption("digits") - 3L), 
     cat("\nModel", id, "glance summary:\n")
     print(x$model_summaries$model_glance[[id]], digits = digits)
   }
+
+  invisible(x)
+}
+
+
+#' @export
+plot.cbc_lm <- function(x, n_models = length(x$models), ask = interactive() && n_models > 1, ...) {
+
+  # Check if n_models is within the number of models we have
+  if(n_models > length(x$models)){
+    warning("n_models is more than the number of models available. Plotting all models instead.")
+    n_models <- length(x$models)
+  }
+
+  # Subset the models based on n_models
+  models <- x$models[1:n_models]
+
+  # If multiple plots will be drawn, set up the graphics device to ask before
+  # drawing each one (if interactive)
+  if (ask) {
+    oldpar <- graphics::par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+    on.exit(graphics::par(oldpar))
+  }
+
+  # Loop through each model and generate 4 base R plot.lm plots
+  purrr::iwalk(models, function(model, id) {
+
+    # Plot title
+    title <- paste("Model", id, "Diagnostic Plots")
+
+    # Generate 4 plot.lm() plots for each model
+    plot(model, main = title, ...)
+
+    # If ask = TRUE and it's interactive, ask before drawing next plot
+    if(ask && interactive()) {
+      utils::menu(c("Next"),
+                  title = "Select 1 and press Enter to go to the next plot; press Esc to quit")
+    }
+  })
 
   invisible(x)
 }
