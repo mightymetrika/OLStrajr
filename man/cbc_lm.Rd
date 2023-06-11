@@ -11,7 +11,8 @@ cbc_lm(
   n_bootstrap = 4000,
   lm_options = list(),
   boot_options = list(),
-  conf = 0.95
+  boot.ci_options = list(),
+  na.rm = FALSE
 )
 }
 \arguments{
@@ -29,7 +30,11 @@ confidence intervals of mean coefficients}
 
 \item{boot_options}{Pass additional arguments to boot}
 
-\item{conf}{Pass confidence level to boot.ci}
+\item{boot.ci_options}{Pass additional arguments to boot.ci}
+
+\item{na.rm}{Pass na.rm to: the mean function used to obtain mean_coef and bm_coef;
+the sd function used to obtain se_coef; the mean function used in the statistic
+parameter of boot}
 }
 \value{
 An object of class cbc_lm

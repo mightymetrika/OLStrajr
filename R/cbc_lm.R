@@ -8,7 +8,10 @@
 #' confidence intervals of mean coefficients
 #' @param lm_options Pass additional arguments to lm
 #' @param boot_options Pass additional arguments to boot
-#' @param conf Pass confidence level to boot.ci
+#' @param boot.ci_options Pass additional arguments to boot.ci
+#' @param na.rm Pass na.rm to: the mean function used to obtain mean_coef and bm_coef;
+#' the sd function used to obtain se_coef; the mean function used in the statistic
+#' parameter of boot
 #'
 #' @return An object of class cbc_lm
 #' @export
@@ -21,7 +24,33 @@
 #'
 #'  cbc_lm(data = df, formula = outs ~ vals, .case = "ids")
 cbc_lm <- function(data, formula, .case, n_bootstrap = 4000,
-                   lm_options = list(), boot_options = list(), conf = 0.95){
+                   lm_options = list(), boot_options = list(),
+                   boot.ci_options = list(), na.rm = FALSE){
+
+  # Initial checks
+  if(!is.data.frame(data)){
+    stop("'data' must be a data frame.")
+  }
+
+  if (!inherits(tryCatch(stats::as.formula(formula), error = function(e) NULL), "formula")) {
+    stop("'formula' must be a valid formula or a string coercible to a formula.")
+  }
+
+  if(!.case %in% colnames(data)){
+    stop("'.case' must be a valid column name in 'data'.")
+  }
+
+  if(!is.numeric(n_bootstrap) || n_bootstrap <= 0 || round(n_bootstrap) != n_bootstrap){
+    stop("'n_bootstrap' must be a positive integer.")
+  }
+
+  if(!is.list(lm_options) || !is.list(boot_options) || !is.list(boot.ci_options)){
+    stop("'lm_options', 'boot_options', and 'boot.ci_options' must be lists.")
+  }
+
+  if(!is.logical(na.rm)){
+    stop("'na.rm' must be a logical value.")
+  }
 
   # Extract the variables from the formula
   ind_vars <- all.vars(stats::as.formula(formula))[-1]
@@ -46,19 +75,19 @@ cbc_lm <- function(data, formula, .case, n_bootstrap = 4000,
 
   summary_stats <- purrr::map(ind_vars, ~{
     var <- .x
-    mean_coef <- mean(flat_summaries$estimate[flat_summaries$term == var])
+    mean_coef <- mean(flat_summaries$estimate[flat_summaries$term == var], na.rm = na.rm)
 
     boot_coef <- do.call(boot::boot, c(list(
       data = flat_summaries[flat_summaries$term == var,],
       statistic = function(data, indices) {
-        mean(data$estimate[data$term == var][indices])
+        mean(data$estimate[data$term == var][indices], na.rm = na.rm)
       },
       R = n_bootstrap
     ), boot_options))
 
-    bm_coef <- mean(boot_coef$t)
-    se_coef <- stats::sd(boot_coef$t)
-    ci_coef <- boot::boot.ci(boot_coef, type = "bca", conf = conf)$bca[4:5]
+    bm_coef <- mean(boot_coef$t, na.rm = na.rm)
+    se_coef <- stats::sd(boot_coef$t, na.rm = na.rm)
+    ci_coef <- do.call(boot::boot.ci, c(list(boot.out = boot_coef, type = "bca"), boot.ci_options))$bca[4:5]
 
     list(mean_coef = mean_coef, bm_coef = bm_coef, se_coef = se_coef, ci_coef = ci_coef)
   }) |> purrr::set_names(ind_vars)
