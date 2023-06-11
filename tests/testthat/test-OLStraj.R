@@ -7,7 +7,7 @@
 #
 #   olstraj_out <- OLStraj(data = df,
 #                          varlist = c("var1", "var2", "var3", "var4"),
-#                          regtype = "both",
+#                          regtype = "quad",
 #                          int_bins = 5,
 #                          lin_bins = 5,
 #                          quad_bins = 5)

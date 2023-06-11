@@ -1,12 +1,106 @@
+#' OLStraj
+#'
+#' @param data A data frame
+#' @param idvarname A quoted variable name identifying the column in data which
+#' serves as the case identifier
+#' @param predvarname A quoted predictor variable label.
+#' @param outvarname A quoted outcome variable label.
+#' @param varlist A vector of quoted variable names found in data
+#' @param timepts A vector specifying how time points should be coded
+#' @param inclmiss A character specifying whether or not to use complete cases.
+#' Set inclmiss to 'n' in order to filter data down to complete cases.
+#' @param level Control which OLS trajectory plots to show.  If level is set to
+#' "grp" then only group level plots will be shown, if level is set to "ind" then
+#' only individual level plots will be shown, and if level is set to "both" then
+#' both group and individual level plots will be shown.
+#' @param regtype Set regtype to "quad" to include quadratic term in the cbc_lm
+#' call or set regtype to "lin" to exclude the quadratic term
+#' @param numplot Specify an integer to subset the number of cases used in OLStraj
+#' @param hist Set hist to 'y' to include histograms
+#' @param int_bins Set the number of bins for the intercept term's histogram
+#' @param lin_bins Set the number of bins for the linear term's histogram
+#' @param quad_bins Set the number of bins for the quadratic term's histogram
+#' @param box Set box to 'y' to include boxplots
+#' @param outds Set outds to TRUE to include the output as a data frame.  Output
+#' will contain original data used in the OLStraj algorithm with the parameter
+#' estimates obtained from cbc_lm
+#' @param ... Pass additional arguments to cbc_lm
+#'
+#' @return A list containing an output data frame (if outds is set to TRUE) and
+#' the selected plots
+#' @export
+#'
+#' @examples
+#'   df <- data.frame(id = c(1,2,3,4,5),
+#'                    var1 = c(3,7,4,5,8),
+#'                    var2 = c(7,3,9,4,7),
+#'                    var3 = c(8,5,3,9,7),
+#'                    var4 = c(1,5,3,9,30))
+#'
+#'   olstraj_out <- OLStraj(data = df,
+#'                          varlist = c("var1", "var2", "var3", "var4"),
+#'                          regtype = "quad",
+#'                          int_bins = 5,
+#'                          lin_bins = 5,
+#'                          quad_bins = 5)
 OLStraj <- function(data, idvarname = "id", predvarname = "time",
                     outvarname = "score",
                     varlist = c("anti1", "anti2", "anti3", "anti4"),
                     timepts = c(0, 1, 2, 3), inclmiss = "n", level = "both", regtype = "lin",
                     numplot = NULL, hist = "y", int_bins = 30, lin_bins = 30,
-                    quad_bins = 30, box = "y", outds = TRUE) {
+                    quad_bins = 30, box = "y", outds = TRUE, ...) {
 
+  # Check if data is a data.frame
+  if (!is.data.frame(data)) {
+    stop("data must be a data frame.")
+  }
+
+  # Check if idvarname, predvarname and outvarname exist in data
+  if (!(idvarname %in% names(data))) {
+    stop("idvarname must be a column name in the provided data frame.")
+  }
+
+  # Check if varlist elements are column names in data
+  if (!all(varlist %in% names(data))) {
+    stop("All elements of varlist must be column names in the provided data frame.")
+  }
+
+  # Check if length of timepts matches length of varlist
   if(length(timepts) != length(varlist)){
     stop("ERROR: NUMBER OF TIME POINTS DOES NOT EQUAL NUMBER OF REPEATED MEASURES")
+  }
+
+  # Check if inclmiss is either "y" or "n"
+  if (!inclmiss %in% c("y", "n")) {
+    stop("inclmiss must be either 'y' or 'n'.")
+  }
+
+  # Check if level is one of "both", "grp", or "ind"
+  if (!level %in% c("both", "grp", "ind")) {
+    stop("level must be either 'both', 'grp', or 'ind'.")
+  }
+
+  # Check if regtype is either "lin" or "quad"
+  if (!regtype %in% c("lin", "quad")) {
+    stop("regtype must be either 'lin' or 'quad'.")
+  }
+
+  # Check if numplot is NULL or an integer
+  if (!is.null(numplot) & (!is.numeric(tryCatch(numplot, error = function(e) NULL) |
+                                       (tryCatch(numplot != round(numplot), error = function(e) NULL))))) {
+    stop("numplot must be either NULL or an integer.")
+  }
+
+  # Check if hist is either "y" or "n"
+  if (!hist %in% c("y", "n")) {
+    stop("hist must be either 'y' or 'n'.")
+  }
+
+  # Check if int_bins, lin_bins, quad_bins are positive integers
+  if (!is.numeric(int_bins) | (int_bins != round(int_bins)) | (int_bins <= 0) |
+      !is.numeric(lin_bins) | (lin_bins != round(lin_bins)) | (lin_bins <= 0) |
+      !is.numeric(quad_bins) | (quad_bins != round(quad_bins)) | (quad_bins <= 0)) {
+    stop("int_bins, lin_bins, quad_bins must be positive integers.")
   }
 
   # Create subsample
@@ -43,7 +137,7 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
                                         paste0(predvarname, "_sq")))
   }
 
-  models <- cbc_lm(data = data, formula = cbc_form, .case = idvarname)
+  models <- cbc_lm(data = data, formula = cbc_form, .case = idvarname, ...)
 
   ols_dat <- lapply(seq_along(models$models), function(i){
     # Define model
