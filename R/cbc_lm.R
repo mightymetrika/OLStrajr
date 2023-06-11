@@ -27,6 +27,31 @@ cbc_lm <- function(data, formula, .case, n_bootstrap = 4000,
                    lm_options = list(), boot_options = list(),
                    boot.ci_options = list(), na.rm = FALSE){
 
+  # Initial checks
+  if(!is.data.frame(data)){
+    stop("'data' must be a data frame.")
+  }
+
+  if (!inherits(tryCatch(stats::as.formula(formula), error = function(e) NULL), "formula")) {
+    stop("'formula' must be a valid formula or a string coercible to a formula.")
+  }
+
+  if(!.case %in% colnames(data)){
+    stop("'.case' must be a valid column name in 'data'.")
+  }
+
+  if(!is.numeric(n_bootstrap) || n_bootstrap <= 0 || round(n_bootstrap) != n_bootstrap){
+    stop("'n_bootstrap' must be a positive integer.")
+  }
+
+  if(!is.list(lm_options) || !is.list(boot_options) || !is.list(boot.ci_options)){
+    stop("'lm_options', 'boot_options', and 'boot.ci_options' must be lists.")
+  }
+
+  if(!is.logical(na.rm)){
+    stop("'na.rm' must be a logical value.")
+  }
+
   # Extract the variables from the formula
   ind_vars <- all.vars(stats::as.formula(formula))[-1]
 
