@@ -31,7 +31,7 @@ You can install the development version of OLStrajr as follows:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("mncube/OLStrajr")
+devtools::install_github("mightymetrika/OLStrajr")
 ```
 
 ## GPT-4 Dog Barking Poisson
