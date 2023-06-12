@@ -7,8 +7,8 @@
 #' @param outvarname A quoted outcome variable label.
 #' @param varlist A vector of quoted variable names found in data
 #' @param timepts A vector specifying how time points should be coded
-#' @param inclmiss A character specifying whether or not to use complete cases.
-#' Set inclmiss to 'n' in order to filter data down to complete cases.
+#' @param inclmiss A logical specifying whether or not to use complete cases.
+#' Set inclmiss to FALSE in order to filter data down to complete cases.
 #' @param level Control which OLS trajectory plots to show.  If level is set to
 #' "grp" then only group level plots will be shown, if level is set to "ind" then
 #' only individual level plots will be shown, and if level is set to "both" then
@@ -16,11 +16,11 @@
 #' @param regtype Set regtype to "quad" to include quadratic term in the cbc_lm
 #' call or set regtype to "lin" to exclude the quadratic term
 #' @param numplot Specify an integer to subset the number of cases used in OLStraj
-#' @param hist Set hist to 'y' to include histograms
+#' @param hist Set hist to  TRUE to include histograms or FALSE to exclude
 #' @param int_bins Set the number of bins for the intercept term's histogram
 #' @param lin_bins Set the number of bins for the linear term's histogram
 #' @param quad_bins Set the number of bins for the quadratic term's histogram
-#' @param box Set box to 'y' to include boxplots
+#' @param box Set box to TRUE to include boxplots or FALSE to exclude
 #' @param outds Set outds to TRUE to include the output as a data frame.  Output
 #' will contain original data used in the OLStraj algorithm with the parameter
 #' estimates obtained from cbc_lm
@@ -46,9 +46,9 @@
 OLStraj <- function(data, idvarname = "id", predvarname = "time",
                     outvarname = "score",
                     varlist = c("anti1", "anti2", "anti3", "anti4"),
-                    timepts = c(0, 1, 2, 3), inclmiss = "n", level = "both", regtype = "lin",
-                    numplot = NULL, hist = "y", int_bins = 30, lin_bins = 30,
-                    quad_bins = 30, box = "y", outds = TRUE, ...) {
+                    timepts = c(0, 1, 2, 3), inclmiss = FALSE, level = "both", regtype = "lin",
+                    numplot = NULL, hist = TRUE, int_bins = 30, lin_bins = 30,
+                    quad_bins = 30, box = TRUE, outds = TRUE, ...) {
 
   # Check if data is a data.frame
   if (!is.data.frame(data)) {
@@ -70,9 +70,9 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
     stop("ERROR: NUMBER OF TIME POINTS DOES NOT EQUAL NUMBER OF REPEATED MEASURES")
   }
 
-  # Check if inclmiss is either "y" or "n"
-  if (!inclmiss %in% c("y", "n")) {
-    stop("inclmiss must be either 'y' or 'n'.")
+  # Check if inclmiss is logical
+  if (!is.logical(inclmiss)) {
+    stop("inclmiss must be of type logical.")
   }
 
   # Check if level is one of "both", "grp", or "ind"
@@ -91,9 +91,19 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
     stop("numplot must be either NULL or an integer.")
   }
 
-  # Check if hist is either "y" or "n"
-  if (!hist %in% c("y", "n")) {
-    stop("hist must be either 'y' or 'n'.")
+  # Check if hist is logical
+  if (!is.logical(hist)) {
+    stop("hist must be of type logical.")
+  }
+
+  # Check if box is logical
+  if (!is.logical(box)) {
+    stop("box must be of type logical.")
+  }
+
+  # Check if outds is logical
+  if (!is.logical(outds)) {
+    stop("outds must be of type logical.")
   }
 
   # Check if int_bins, lin_bins, quad_bins are positive integers
@@ -112,7 +122,7 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
   data_orig <- data
 
   # Listwise deletion
-  if (inclmiss == "n") {
+  if (inclmiss == FALSE) {
     data <- data[stats::complete.cases(data), ]
   }
 
@@ -235,7 +245,7 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
     }
   }
 
-  if (hist == "y") {
+  if (hist == TRUE) {
     # Histogram
     intercepts <- ggplot2::ggplot(data, ggplot2::aes(x = intercept)) +
       ggplot2::geom_histogram(bins = int_bins) +
@@ -259,7 +269,7 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
     }
   }
 
-  if (box == "y") {
+  if (box == TRUE) {
     #Add mean to boxplot and label outliers:
     if (regtype == "lin"){
       data_box <- data |> tidyr::pivot_longer(cols = c(intercept, linear),

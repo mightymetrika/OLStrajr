@@ -11,15 +11,15 @@ OLStraj(
   outvarname = "score",
   varlist = c("anti1", "anti2", "anti3", "anti4"),
   timepts = c(0, 1, 2, 3),
-  inclmiss = "n",
+  inclmiss = FALSE,
   level = "both",
   regtype = "lin",
   numplot = NULL,
-  hist = "y",
+  hist = TRUE,
   int_bins = 30,
   lin_bins = 30,
   quad_bins = 30,
-  box = "y",
+  box = TRUE,
   outds = TRUE,
   ...
 )
@@ -38,8 +38,8 @@ serves as the case identifier}
 
 \item{timepts}{A vector specifying how time points should be coded}
 
-\item{inclmiss}{A character specifying whether or not to use complete cases.
-Set inclmiss to 'n' in order to filter data down to complete cases.}
+\item{inclmiss}{A logical specifying whether or not to use complete cases.
+Set inclmiss to FALSE in order to filter data down to complete cases.}
 
 \item{level}{Control which OLS trajectory plots to show.  If level is set to
 "grp" then only group level plots will be shown, if level is set to "ind" then
@@ -51,7 +51,7 @@ call or set regtype to "lin" to exclude the quadratic term}
 
 \item{numplot}{Specify an integer to subset the number of cases used in OLStraj}
 
-\item{hist}{Set hist to 'y' to include histograms}
+\item{hist}{Set hist to  TRUE to include histograms or FALSE to exclude}
 
 \item{int_bins}{Set the number of bins for the intercept term's histogram}
 
@@ -59,7 +59,7 @@ call or set regtype to "lin" to exclude the quadratic term}
 
 \item{quad_bins}{Set the number of bins for the quadratic term's histogram}
 
-\item{box}{Set box to 'y' to include boxplots}
+\item{box}{Set box to TRUE to include boxplots or FALSE to exclude}
 
 \item{outds}{Set outds to TRUE to include the output as a data frame.  Output
 will contain original data used in the OLStraj algorithm with the parameter
