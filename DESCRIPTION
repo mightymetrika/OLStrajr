@@ -1,5 +1,5 @@
 Package: OLStrajr
-Title: What the Package Does (One Line, Title Case)
+Title: Ordinary Least Squares Trajectories
 Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
