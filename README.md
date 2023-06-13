@@ -9,7 +9,7 @@
 The [Maximizing the Yield of Small Samples in Prevention Research: A
 Review of General Strategies and Best
 Practices](https://doi.org/10.1007%2Fs11121-014-0542-7) paper by Hopkin,
-Hoyle, and Gottfredson(2015) suggests that when working with small
+Hoyle, and Gottfredson (2015) suggests that when working with small
 sample sizes, analysts should leverage plots to explore within-group
 associations between predictor variables and the outcome variable. These
 plots are intended to provide detailed insights about the data rather
