@@ -152,16 +152,17 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
   ols_dat <- lapply(seq_along(models$models), function(i){
     # Define model
     model <- models$models[[i]]
+    id_val <- names(models$models)[[i]]
 
     # Add the estimated values to the data frame
     if (regtype == "lin"){
-      stats::setNames(data.frame(i,
+      stats::setNames(data.frame(id_val,
                                  stats::coef(model)[1],
                                  stats::coef(model)[2],
                                  summary(model)[[8]]),
                       c(eval(idvarname), "intercept", "linear", "rsquared"))
     } else {
-      stats::setNames(data.frame(i,
+      stats::setNames(data.frame(id_val,
                                  stats::coef(model)[1],
                                  stats::coef(model)[2],
                                  stats::coef(model)[3],
