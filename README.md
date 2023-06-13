@@ -34,46 +34,27 @@ You can install the development version of OLStrajr as follows:
 devtools::install_github("mightymetrika/OLStrajr")
 ```
 
-## GPT-4 Dog Barking Poisson
-
-This is an illustrative example that shows how to use OLStrajr.
-
-On June 12th, 2023, I asked GPT-4 with Browsing to provide an estimation
-of the number of times a dog might bark from 6:00AM to 6:01AM. I
-received the following response:
-
-“The number of times a dog barks within a minute can vary widely based
-on many factors, such as the dog’s breed, personality, and the stimulus
-causing the barking. Some dogs may bark once or twice and then stop,
-while others may bark continuously. If we take a rough estimate, a dog
-that barks continuously might bark once every two seconds, which would
-equate to about 30 barks in a minute. However, this is a very rough
-estimate and the actual number could be much higher or lower depending
-on the dog and the circumstances.
-
-Please note that excessive barking can be a sign of stress, boredom, or
-other issues in a dog, so if a dog is barking a lot, it’s important to
-try to identify and address the underlying cause.”
-
-Based on this response, I simulated five days of data from five
-different houses, where the dogs start barking at 6AM. The barking
-frequency is modeled as a Poisson process where the week becomes
-increasingly boring. This basic example shows how to use OLStrajr
-
 ``` r
 library(OLStrajr)
 ```
 
-### Simulate Data
+## Ratio of Robin Males to Females
+
+This serves as an exemplary demonstration of using OLStrajr. It features
+an analysis of data representing the yearly ratio of male to female
+robins, as documented in [Birds: incomplete counts—five-minute bird
+counts Version
+1.0](https://www.doc.govt.nz/documents/science-and-technical/inventory-monitoring/im-toolbox-birds-incomplete-five-min-counts.pdf).
+This data, collected at Walker Creek (W) and Knobs Flat (K) from August
+2005 to August 2009, provides a compelling case study
 
 ``` r
-set.seed(489)
-barks <- data.frame(dog = c(1, 2, 3, 4, 5),
-                    mon = rpois(5, 14),
-                    tues = rpois(5, 18),
-                    weds = rpois(5, 22),
-                    thurs = rpois(5, 26),
-                    fri = rpois(5, 30))
+robins <- data.frame(site = c("W", "K"),
+                    aug_05 = c(1.67, 1.64),
+                    aug_06 = c(1.50, 1.76),
+                    aug_07 = c(1.80, 2.33),
+                    aug_08 = c(1.60, 3.00),
+                    aug_09 = c(1.38, 2.40))
 ```
 
 ### OLStraj
@@ -81,15 +62,15 @@ barks <- data.frame(dog = c(1, 2, 3, 4, 5),
 To obtain the OLS trajectories, use the following code:
 
 ``` r
-barks_traj <- OLStraj(data = barks,
-                      idvarname = "dog",
-                      predvarname = "Day",
-                      outvarname = "Barks",
-                      varlist = c("mon", "tues", "weds", "thurs", "fri"),
-                      timepts = c(1, 2, 3, 4, 5),
+robins_traj <- OLStraj(data = robins,
+                      idvarname = "site",
+                      predvarname = "Year",
+                      outvarname = "Ratio",
+                      varlist = c("aug_05", "aug_06", "aug_07", "aug_08", "aug_09"),
+                      timepts = c(0, 1, 2, 3, 4),
                       regtype = "lin",
-                      int_bins = 5,
-                      lin_bins = 5)
+                      int_bins = 3,
+                      lin_bins = 3)
 ```
 
 The OLStraj function provides several types of plots that facilitate the
@@ -98,7 +79,7 @@ examination of your data:
 ### Group Plots:
 
 ``` r
-barks_traj$group_plots
+robins_traj$group_plots
 #> $simple_joined
 ```
 
@@ -117,36 +98,18 @@ comparison of trends across different groups.
 ### Individual OLS Trajectories:
 
 ``` r
-barks_traj$individual_plots
-#> $`ols 1`
+robins_traj$individual_plots
+#> $`ols K`
 #> `geom_smooth()` using formula = 'y ~ x'
 ```
 
 <img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
     #> 
-    #> $`ols 2`
+    #> $`ols W`
     #> `geom_smooth()` using formula = 'y ~ x'
 
 <img src="man/figures/README-unnamed-chunk-7-2.png" width="100%" />
-
-    #> 
-    #> $`ols 3`
-    #> `geom_smooth()` using formula = 'y ~ x'
-
-<img src="man/figures/README-unnamed-chunk-7-3.png" width="100%" />
-
-    #> 
-    #> $`ols 4`
-    #> `geom_smooth()` using formula = 'y ~ x'
-
-<img src="man/figures/README-unnamed-chunk-7-4.png" width="100%" />
-
-    #> 
-    #> $`ols 5`
-    #> `geom_smooth()` using formula = 'y ~ x'
-
-<img src="man/figures/README-unnamed-chunk-7-5.png" width="100%" />
 
 Individual plots represent each subject’s unique trajectory over time,
 providing insights into individual patterns of change.
@@ -154,7 +117,7 @@ providing insights into individual patterns of change.
 ### Histograms for intercepts and slopes:
 
 ``` r
-barks_traj$histogram_plots
+robins_traj$histogram_plots
 #> $intercepts
 ```
 
@@ -172,7 +135,7 @@ distributional properties in the data.
 ### Box plots of intercepts and slopes:
 
 ``` r
-barks_traj$box_plot
+robins_traj$box_plot
 ```
 
 <img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
