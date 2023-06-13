@@ -65,8 +65,8 @@ robins_traj <- OLStraj(data = robins,
                       varlist = c("aug_05", "aug_06", "aug_07", "aug_08", "aug_09"),
                       timepts = c(0, 1, 2, 3, 4),
                       regtype = "lin",
-                      int_bins = 5,
-                      lin_bins = 5)
+                      int_bins = 3,
+                      lin_bins = 3)
 ```
 
 
