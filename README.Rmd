@@ -44,6 +44,9 @@ library(OLStrajr)
 
 # Get robins data
 data(robins)
+
+# Print robins data
+robins
 ```
 
 

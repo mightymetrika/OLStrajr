@@ -50,6 +50,12 @@ library(OLStrajr)
 
 # Get robins data
 data(robins)
+
+# Print robins data
+robins
+#>           site aug_05 aug_06 aug_07 aug_08 aug_09
+#> 1 Walker_Creek   1.67   1.50   1.80    1.6   1.38
+#> 2   Knobs_Flat   1.64   1.76   2.33    3.0   2.40
 ```
 
 ### OLStraj
