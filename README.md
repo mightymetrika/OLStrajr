@@ -34,10 +34,6 @@ You can install the development version of OLStrajr as follows:
 devtools::install_github("mightymetrika/OLStrajr")
 ```
 
-``` r
-library(OLStrajr)
-```
-
 ## Ratio of Robin Males to Females
 
 This serves as an exemplary demonstration of using OLStrajr. It features
@@ -45,16 +41,15 @@ an analysis of data representing the yearly ratio of male to female
 robins, as documented in [Birds: incomplete counts—five-minute bird
 counts Version
 1.0](https://www.doc.govt.nz/documents/science-and-technical/inventory-monitoring/im-toolbox-birds-incomplete-five-min-counts.pdf).
-This data, collected at Walker Creek (W) and Knobs Flat (K) from August
-2005 to August 2009, provides a compelling case study
+This data, collected at Walker Creek and Knobs Flat from August 2005 to
+August 2009, provides a compelling case study
 
 ``` r
-robins <- data.frame(site = c("W", "K"),
-                    aug_05 = c(1.67, 1.64),
-                    aug_06 = c(1.50, 1.76),
-                    aug_07 = c(1.80, 2.33),
-                    aug_08 = c(1.60, 3.00),
-                    aug_09 = c(1.38, 2.40))
+# Load package
+library(OLStrajr)
+
+# Get robins data
+data(robins)
 ```
 
 ### OLStraj
@@ -66,7 +61,8 @@ robins_traj <- OLStraj(data = robins,
                       idvarname = "site",
                       predvarname = "Year",
                       outvarname = "Ratio",
-                      varlist = c("aug_05", "aug_06", "aug_07", "aug_08", "aug_09"),
+                      varlist = c("aug_05", "aug_06", "aug_07", 
+                                  "aug_08", "aug_09"),
                       timepts = c(0, 1, 2, 3, 4),
                       regtype = "lin",
                       int_bins = 3,
@@ -83,13 +79,13 @@ robins_traj$group_plots
 #> $simple_joined
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
     #> 
     #> $ols
     #> `geom_smooth()` using formula = 'y ~ x'
 
-<img src="man/figures/README-unnamed-chunk-6-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-2.png" width="100%" />
 
 Group plots depict the simple-joined trajectories and the estimated
 trajectories for each group in your data, allowing for a quick
@@ -99,17 +95,17 @@ comparison of trends across different groups.
 
 ``` r
 robins_traj$individual_plots
-#> $`ols K`
+#> $`ols Knobs_Flat`
 #> `geom_smooth()` using formula = 'y ~ x'
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
     #> 
-    #> $`ols W`
+    #> $`ols Walker_Creek`
     #> `geom_smooth()` using formula = 'y ~ x'
 
-<img src="man/figures/README-unnamed-chunk-7-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-2.png" width="100%" />
 
 Individual plots represent each subject’s unique trajectory over time,
 providing insights into individual patterns of change.
@@ -121,12 +117,12 @@ robins_traj$histogram_plots
 #> $intercepts
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
     #> 
     #> $slopes
 
-<img src="man/figures/README-unnamed-chunk-8-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-2.png" width="100%" />
 
 These histograms reveal the distribution of intercepts and slopes across
 subjects. They are useful for identifying skewness or other interesting
@@ -138,7 +134,7 @@ distributional properties in the data.
 robins_traj$box_plot
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 Box plots provide a summary of the distribution of intercepts and slopes
 across subjects. They allow you to visualize the spread and skewness of
