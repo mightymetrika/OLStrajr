@@ -14,7 +14,9 @@
 #' only individual level plots will be shown, and if level is set to "both" then
 #' both group and individual level plots will be shown.
 #' @param regtype Set regtype to "quad" to include quadratic term in the cbc_lm
-#' call or set regtype to "lin" to exclude the quadratic term
+#' call or set regtype to "lin" to exclude the quadratic term.  Use regtype = "both
+#' to include the quadratic term in the cbc_lm call and to include both linear
+#' and quadratic terms on the individual OLS-estimated trajectory plots.
 #' @param numplot Specify an integer to subset the number of cases used in OLStraj
 #' @param hist Set hist to  TRUE to include histograms or FALSE to exclude
 #' @param int_bins Set the number of bins for the intercept term's histogram
@@ -26,8 +28,8 @@
 #' estimates obtained from cbc_lm
 #' @param ... Pass additional arguments to cbc_lm
 #'
-#' @return A list containing an output data frame (if outds is set to TRUE) and
-#' the selected plots
+#' @return A list containing an output data frame (if outds is set to TRUE), the
+#' selected plots, and the case-by-case regression model object.
 #' @export
 #'
 #' @examples
@@ -81,8 +83,8 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
   }
 
   # Check if regtype is either "lin" or "quad"
-  if (!regtype %in% c("lin", "quad")) {
-    stop("regtype must be either 'lin' or 'quad'.")
+  if (!regtype %in% c("lin", "quad", "both")) {
+    stop("regtype must be either 'lin', 'quad', or 'both'.")
   }
 
   # Check if numplot is NULL or an integer
@@ -318,7 +320,8 @@ OLStraj <- function(data, idvarname = "id", predvarname = "time",
                  group_plots = group_plots,
                  individual_plots = individual_plots,
                  histogram_plots = histogram_plots,
-                 box_plot = data_box)
+                 box_plot = data_box,
+                 models = models)
 
   return(result)
 }

@@ -47,7 +47,9 @@ only individual level plots will be shown, and if level is set to "both" then
 both group and individual level plots will be shown.}
 
 \item{regtype}{Set regtype to "quad" to include quadratic term in the cbc_lm
-call or set regtype to "lin" to exclude the quadratic term}
+call or set regtype to "lin" to exclude the quadratic term.  Use regtype = "both
+to include the quadratic term in the cbc_lm call and to include both linear
+and quadratic terms on the individual OLS-estimated trajectory plots.}
 
 \item{numplot}{Specify an integer to subset the number of cases used in OLStraj}
 
@@ -68,8 +70,8 @@ estimates obtained from cbc_lm}
 \item{...}{Pass additional arguments to cbc_lm}
 }
 \value{
-A list containing an output data frame (if outds is set to TRUE) and
-the selected plots
+A list containing an output data frame (if outds is set to TRUE), the
+selected plots, and the case-by-case regression model object.
 }
 \description{
 OLStraj
