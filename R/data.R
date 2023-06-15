@@ -11,3 +11,25 @@
 #' }
 #' @source <https://www.doc.govt.nz/documents/science-and-technical/inventory-monitoring/im-toolbox-birds-incomplete-five-min-counts.pdf>
 "robins"
+
+
+#'  Rat Weight Data from HLM manual
+#'
+#'  Data obtained from [Rogosa & Saner (1995)](https://doi.org/10.3102/10769986020002149)
+#'  which describes the data as: "Example 1. The rat weight data are taken from
+#'  the HLM manual (Bryk et al., 1989). The rat data consist of 10 individuals,
+#'  with weight measurements (Y) at five occasions (Weeks 0, 1,2, 3, 4) and a
+#'  background measure, the mother's weight (Z)."
+#'
+#' @format ## `rats`
+#' A data frame with 10 observations and 7 variables:
+#' \describe{
+#'   \item{Rat}{Rat identifier}
+#'   \item{t0, t1, t2, t3, t4}{Week of weight measure}
+#'   \item{Z}{Mother's weight}
+#' }
+#'
+#' @references Bryk, A. S., Raudenbush, S. W., Seltzer, M., & Congdon, R. T. (1989).
+#' An introduction to HLM: Computer program and user's guide. Chicago: University of Chicago.
+#' @source <https://doi.org/10.3102/10769986020002149>
+"rats"
