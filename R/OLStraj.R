@@ -1,5 +1,11 @@
 #' OLStraj
 #'
+#' Implements the OLS trajectory analysis method as detailed in Carrig et al (2004).
+#' The method uses case-by-case ordinary least squares (OLS) regression to estimate
+#' individual growth curves over time. The function provides options for
+#' group-level and individual-level plots and accommodates linear and quadratic
+#' models.
+#'
 #' @param data A data frame
 #' @param idvarname A quoted variable name identifying the column in data which
 #' serves as the case identifier
@@ -14,7 +20,7 @@
 #' only individual level plots will be shown, and if level is set to "both" then
 #' both group and individual level plots will be shown.
 #' @param regtype Set regtype to "quad" to include quadratic term in the cbc_lm
-#' call or set regtype to "lin" to exclude the quadratic term.  Use regtype = "both
+#' call or set regtype to "lin" to exclude the quadratic term.  Use regtype = "both"
 #' to include the quadratic term in the cbc_lm call and to include both linear
 #' and quadratic terms on the individual OLS-estimated trajectory plots.
 #' @param numplot Specify an integer to subset the number of cases used in OLStraj
@@ -31,6 +37,12 @@
 #' @return A list containing an output data frame (if outds is set to TRUE), the
 #' selected plots, and the case-by-case regression model object.
 #' @export
+#'
+#' @references
+#' Carrig, M.M., Wirth, R.J., & Curran, P.J. (2004). A SAS Macro for Estimating
+#' and Visualizing Individual Growth Curves.  Structural Equation Modeling: A
+#' Multidisciplinary Journal, 11(1), 132-149.
+#' \doi{10.1207/S15328007SEM1101_9}
 #'
 #' @examples
 #'   df <- data.frame(id = c(1,2,3,4,5),
