@@ -1,10 +1,18 @@
 Package: OLStrajr
-Title: Ordinary Least Squares Trajectories
+Title: Ordinary Least Squares Trajectory Analysis
 Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: This package provides functions for the implementation of case-by-case 
+    ordinary least squares (OLS) regression and OLS trajectory analysis as detailed in 
+    Carrig, Wirth, & Curran (2004) <doi:10.1207/S15328007SEM1101_9> and Rogosa & Saner (1995) <doi:10.3102/10769986020002149>. The 'cbc_lm' function offers unbiased 
+    estimators of the mean population intercept and slope by calculating the mean values 
+    of the OLS intercepts and slopes for each case, providing standard errors across 
+    bootstrap replicates and calculating 95% confidence intervals using the empirical 
+    distributions from the resampling. The 'OLStraj' function facilitates the estimation 
+    of individual growth curves over time using OLS regression, providing options for 
+    group-level and individual-level plots, and accommodating linear and quadratic models.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
