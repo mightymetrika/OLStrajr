@@ -2,7 +2,7 @@
 % Please edit documentation in R/cbc_lm.R
 \name{cbc_lm}
 \alias{cbc_lm}
-\title{Case-by-Case Linear Regresssion}
+\title{Case-by-Case Linear Regression (cbc_lm)}
 \usage{
 cbc_lm(
   data,
@@ -18,34 +18,54 @@ cbc_lm(
 \arguments{
 \item{data}{A data frame containing the variables in the model}
 
-\item{formula}{An object of class formula or a string coercible to an object
-of class formula}
+\item{formula}{An object of class formula (or a string that can be converted
+to a formula object) detailing the model's specifications.}
 
-\item{.case}{A quoted variable name used to subset data into cases}
+\item{.case}{A quoted variable name used to subset data into cases.}
 
 \item{n_bootstrap}{The number of bootstrap replicates for standard errors and
-confidence intervals of mean coefficients}
+confidence intervals of mean coefficients. Default is 4000, as in Rogosa & Saner
+(1995).}
 
-\item{lm_options}{Pass additional arguments to lm}
+\item{lm_options}{Pass additional arguments to the lm function.}
 
-\item{boot_options}{Pass additional arguments to boot}
+\item{boot_options}{Pass additional arguments to the boot function.}
 
-\item{boot.ci_options}{Pass additional arguments to boot.ci}
+\item{boot.ci_options}{Pass additional arguments to the boot.ci function.}
 
 \item{na.rm}{Pass na.rm to: the mean function used to obtain mean_coef and bm_coef;
 the sd function used to obtain se_coef; the mean function used in the statistic
-parameter of boot}
+parameter of boot.}
 }
 \value{
-An object of class cbc_lm
+An object of class cbc_lm, which contains the results of the case-by-case
+OLS regression, including the mean, standard error, and confidence intervals
+for each coefficient.
 }
 \description{
-Case-by-Case Linear Regresssion
+Implements the case-by-case ordinary least squares (OLS) regression method,
+as detailed in Rogosa & Saner (1995). The cbc_lm function provides unbiased
+estimators of the mean population intercept and slope by calculating the mean
+values of the OLS intercepts and slopes for each case (Carrig et al, 2004).
+The standard errors reported are the standard deviations across bootstrap
+replicates. Additionally, 95\% confidence intervals are calculated using the
+empirical distributions from the resampling.
 }
 \examples{
-  df <- data.frame(ids = rep(1:5, 5),
-                   vals = stats::rnorm(25),
-                   outs = stats::rnorm(25, 10, 25))
+df <- data.frame(ids = rep(1:5, 5),
+                 vals = stats::rnorm(25),
+                 outs = stats::rnorm(25, 10, 25))
 
- cbc_lm(data = df, formula = outs ~ vals, .case = "ids")
+cbc_lm(data = df, formula = outs ~ vals, .case = "ids")
+}
+\references{
+Carrig, M. M., Wirth, R. J., & Curran, P. J. (2004).
+A SAS Macro for Estimating and Visualizing Individual Growth Curves.
+Structural Equation Modeling: A Multidisciplinary Journal, 11(1), 132-149.
+\doi{10.1207/S15328007SEM1101_9}
+
+Rogosa, D., & Saner, H. (1995).
+Longitudinal Data Analysis Examples with Random Coefficient Models.
+Journal of Educational and Behavioral Statistics, 20(2), 149-170.
+\doi{10.3102/10769986020002149}
 }
