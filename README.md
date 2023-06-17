@@ -8,17 +8,18 @@
 
 The [Maximizing the Yield of Small Samples in Prevention Research: A
 Review of General Strategies and Best
-Practices](https://doi.org/10.1007%2Fs11121-014-0542-7) paper by Hopkin,
-Hoyle, and Gottfredson (2015) suggests that when working with small
-sample sizes, analysts should leverage plots to explore within-group
-associations between predictor variables and the outcome variable. These
-plots are intended to provide detailed insights about the data rather
-than to be used for generalizing to the population.
+Practices](https://link.springer.com/article/10.1007/s11121-014-0542-7)
+paper by Hopkin, Hoyle, and Gottfredson (2015) suggests that when
+working with small sample sizes, analysts should leverage plots to
+explore within-group associations between predictor variables and the
+outcome variable. These plots are intended to provide detailed insights
+about the data rather than to be used for generalizing to the
+population.
 
 The paper cites the work of [Carrig, Wirth, and Curran
-(2004)](http://dx.doi.org/10.1207/S15328007SEM1101_9) who proposed an
-easy-to-use SAS macro for visualizing person-specific growth
-trajectories with repeated measures data.
+(2004)](https://www.tandfonline.com/doi/abs/10.1207/S15328007SEM1101_9)
+who proposed an easy-to-use SAS macro for visualizing person-specific
+growth trajectories with repeated measures data.
 
 The objective of the OLStrajr package is to bring the functionality of
 this SAS macro, OLStraj, to R. While the original link to the macro in
@@ -26,6 +27,12 @@ Carrig’s paper is no longer active, it can still be accessed through the
 [Wayback Machine](https://archive.org/web/).
 
 ## Installation
+
+You can install the released version of OLStrajr from CRAN with:
+
+``` r
+install.packages("OLStrajr")
+```
 
 You can install the development version of OLStrajr as follows:
 
@@ -85,13 +92,13 @@ robins_traj$group_plots
 #> $simple_joined
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
     #> 
     #> $ols
     #> `geom_smooth()` using formula = 'y ~ x'
 
-<img src="man/figures/README-unnamed-chunk-5-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-2.png" width="100%" />
 
 Group plots depict the simple-joined trajectories and the estimated
 trajectories for each group in your data, allowing for a quick
@@ -105,13 +112,13 @@ robins_traj$individual_plots
 #> `geom_smooth()` using formula = 'y ~ x'
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
     #> 
     #> $`ols Walker_Creek`
     #> `geom_smooth()` using formula = 'y ~ x'
 
-<img src="man/figures/README-unnamed-chunk-6-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-2.png" width="100%" />
 
 Individual plots represent each subject’s unique trajectory over time,
 providing insights into individual patterns of change.
@@ -123,12 +130,12 @@ robins_traj$histogram_plots
 #> $intercepts
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
     #> 
     #> $slopes
 
-<img src="man/figures/README-unnamed-chunk-7-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-2.png" width="100%" />
 
 These histograms reveal the distribution of intercepts and slopes across
 subjects. They are useful for identifying skewness or other interesting
@@ -140,7 +147,7 @@ distributional properties in the data.
 robins_traj$box_plot
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 Box plots provide a summary of the distribution of intercepts and slopes
 across subjects. They allow you to visualize the spread and skewness of
