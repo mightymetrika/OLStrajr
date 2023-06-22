@@ -92,13 +92,12 @@ test_that("Test that cbc_lm gives expected output with two independent variables
 
 test_that("Investigate zero sd behavior", {
 
-  # Set updata frame with predictor which has zero variance
+  # Set up data frame with predictor which has zero variance
   df <- data.frame(out = stats::rnorm(25), ins = rep(1, 25), ID = rep(1:5, each = 5))
-  df_mod <- stats::lm(out ~ ins,data = df)
-
-  expect_equal(is.na(df_mod$coefficients[["ins"]]), TRUE)
+  # Add variance for some cases
+  df2 <- data.frame(out = stats::rnorm(25), ins = stats::rnorm(25, 1, 1), ID = rep(6:10, each = 5))
+  df <- rbind(df, df2)
 
   # Expect error with cbc_lm
   expect_error(cbc_lm(df, out ~ ins, .case = "ID"))
-
 })

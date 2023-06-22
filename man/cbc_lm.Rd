@@ -12,7 +12,8 @@ cbc_lm(
   lm_options = list(),
   boot_options = list(),
   boot.ci_options = list(),
-  na.rm = FALSE
+  na.rm = FALSE,
+  stop_zeroSD = TRUE
 )
 }
 \arguments{
@@ -36,6 +37,12 @@ confidence intervals of mean coefficients. Default is 4000, as in Rogosa & Saner
 \item{na.rm}{Pass na.rm to: the mean function used to obtain mean_coef and bm_coef;
 the sd function used to obtain se_coef; the mean function used in the statistic
 parameter of boot.}
+
+\item{stop_zeroSD}{A logical. If TRUE, the function halts execution when
+encountering a case where an independent variable has zero standard deviation,
+issuing an error message. If FALSE, the function issues a warning when encountering
+zero standard deviation and skips fitting a model for that case, returning NULL
+in place of a model object for such cases in the output. Defaults to TRUE.}
 }
 \value{
 An object of class cbc_lm, which contains the results of the case-by-case
