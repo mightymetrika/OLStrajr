@@ -63,3 +63,42 @@ test_that("Test that cbc_lm gives expected output", {
   expect_null(s_res$bm_coef)
 
 })
+
+
+test_that("Test that cbc_lm gives expected output with two independent variables", {
+
+  # Define some example data
+  df <- data.frame(ids = rep(1:5, 5),
+                   vals = stats::rnorm(25),
+                   covs = stats::rnorm(25),
+                   outs = stats::rnorm(25, 10, 25))
+
+
+  res <- cbc_lm(data = df, formula = outs ~ vals + covs, .case = "ids")
+
+  expect_equal(length(res), 2)
+
+
+  expect_equal(length(res$models), 5)
+
+  expect_equal(length(summary(res)), 6)
+
+  s_res <- summary(res)
+
+  expect_null(s_res$bm_coef)
+
+})
+
+
+test_that("Investigate zero sd behavior", {
+
+  # Set updata frame with predictor which has zero variance
+  df <- data.frame(out = rnorm(25), ins = rep(1, 25), ID = rep(1:5, each = 5))
+  df_mod <- stats::lm(out ~ ins,data = df)
+
+  expect_equal(is.na(df_mod$coefficients[["ins"]]), TRUE)
+
+  # Expect error with cbc_lm
+  expect_error(cbc_lm(df, out ~ ins, .case = "ID"))
+
+})
