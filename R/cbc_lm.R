@@ -21,6 +21,11 @@
 #' @param na.rm Pass na.rm to: the mean function used to obtain mean_coef and bm_coef;
 #' the sd function used to obtain se_coef; the mean function used in the statistic
 #' parameter of boot.
+#' @param stop_zeroSD A logical. If TRUE, the function halts execution when
+#' encountering a case where an independent variable has zero standard deviation,
+#' issuing an error message. If FALSE, the function issues a warning when encountering
+#' zero standard deviation and skips fitting a model for that case, returning NULL
+#' in place of a model object for such cases in the output. Defaults to TRUE.
 #'
 #' @return An object of class cbc_lm, which contains the results of the case-by-case
 #' OLS regression, including the mean, standard error, and confidence intervals
@@ -48,7 +53,8 @@
 #' cbc_lm(data = df, formula = outs ~ vals, .case = "ids")
 cbc_lm <- function(data, formula, .case, n_bootstrap = 4000,
                    lm_options = list(), boot_options = list(),
-                   boot.ci_options = list(), na.rm = FALSE){
+                   boot.ci_options = list(), na.rm = FALSE,
+                   stop_zeroSD = TRUE){
 
   # Initial checks
   if(!is.data.frame(data)){
@@ -75,20 +81,50 @@ cbc_lm <- function(data, formula, .case, n_bootstrap = 4000,
     stop("'na.rm' must be a logical value.")
   }
 
+  if (!is.logical(stop_zeroSD)){
+    stop("'stop_zeroSD' must be a logical value.")
+  }
+
   # Extract the variables from the formula
   ind_vars <- all.vars(stats::as.formula(formula))[-1]
 
   # List of unique cases
   cases <- unique(data[[.case]])
 
-  # Run regression for each case
-  models <- purrr::map(cases, function(case) {
+  # Define a helper function to fit the model
+  fit_model_case <- function(case, data, formula, ind_vars, lm_options, stop_zeroSD) {
     mod_df <- data[data[[.case]] == case,]
-    do.call("lm", c(list(formula = formula, data = quote(mod_df)), lm_options))
-  }) |> purrr::set_names(cases)
 
-  # Summarize each model
-  summaries <- purrr::map(models, broom::tidy)
+    if(any(sapply(ind_vars, function(var) stats::sd(mod_df[[var]], na.rm = TRUE) == 0))){
+      msg <- paste0("One or more independent variables have zero variance for case ", case, ".")
+
+      if(stop_zeroSD) {
+        stop(msg, " Model not fitted.")
+      } else {
+        warning(msg, " Skipping case.")
+        return(NULL)
+      }
+    }
+
+    do.call("lm", c(list(formula = formula, data = quote(mod_df)), lm_options))
+  }
+
+  # Define a helper function to tidy the model
+  tidy_model_case <- function(model) {
+    if (!is.null(model)) {
+      broom::tidy(model)
+    } else {
+      NULL
+    }
+  }
+
+  # Run regression for each case
+  models <- purrr::map(cases, fit_model_case, data = data, formula = formula,
+                       ind_vars = ind_vars, lm_options = lm_options,
+                       stop_zeroSD = stop_zeroSD) |> purrr::set_names(cases)
+
+  # Summarize each model, skipping NULL models
+  summaries <- purrr::map(models, tidy_model_case) |> purrr::compact()  # remove NULL models
 
   # Flatten summaries into one data frame and add case ID
   flat_summaries <- purrr::map2_df(summaries, names(summaries), ~ transform(.x, case = .y))
